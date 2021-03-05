@@ -1,0 +1,9 @@
+{
+  "apps": [
+    {
+      "name": "crypto-bot",
+      "script": "npm",
+      "args": "start"
+    }
+  ]
+}
