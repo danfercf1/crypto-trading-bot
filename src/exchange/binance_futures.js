@@ -147,7 +147,7 @@ module.exports = class BinanceFutures {
         const profit = position.isLong()
           ? (this.tickers[position.symbol].bid / position.entry - 1) * 100 // long profit
           : (position.entry / this.tickers[position.symbol].ask - 1) * 100; // short profit
-
+        console.log('profit::::::::', profit);
         return Position.createProfitUpdate(position, profit);
       }
 
