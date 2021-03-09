@@ -13,7 +13,7 @@ module.exports = class RiskRewardRatioCalculator {
       this.logger.info(`Invalid position entryPrice for stop loss:${JSON.stringify(position)}`);
       return undefined;
     }
-
+    console.log('options', options);
     const result = {
       stop: undefined,
       target: undefined
