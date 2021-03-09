@@ -124,7 +124,7 @@ module.exports = class TickListener {
     if (!result) {
       return;
     }
-    
+
     // handle orders inside strategy
     const placedOrder = result.getPlaceOrder();
     if (placedOrder.length > 0) {
@@ -177,7 +177,7 @@ module.exports = class TickListener {
         symbol.symbol,
         OrderCapital.createCurrency(order.amount_currency)
       );
-
+        
       const exchangeOrder = Order.createLimitPostOnlyOrder(symbol.symbol, Order.SIDE_LONG, order.price, amount);
 
       await this.orderExecutor.executeOrderWithAmountAndPrice(symbol.exchange, exchangeOrder);
