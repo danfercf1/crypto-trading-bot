@@ -213,7 +213,9 @@ module.exports = class BinanceFutures {
         positionAmt < 0
           ? (entryPrice / markPrice - 1) * 100 // short
           : (markPrice / entryPrice - 1) * 100; // long
-      console.log('createPositions', profit);
+      console.log('profit', profit);
+      console.log('profitx20', profit * 20);
+      console.log('position', position);
       return new Position(
         position.symbol,
         positionAmt < 0 ? 'short' : 'long',

@@ -124,7 +124,7 @@ module.exports = class TickListener {
     if (!result) {
       return;
     }
-    console.log('result', result);
+    
     // handle orders inside strategy
     const placedOrder = result.getPlaceOrder();
     if (placedOrder.length > 0) {
