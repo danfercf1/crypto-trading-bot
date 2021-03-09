@@ -20,13 +20,16 @@ module.exports = class RiskRewardRatioCalculator {
     };
 
     entryPrice = Math.abs(entryPrice);
-
+    const targetPercent = options.target_percent / 100;
+    const stopPercent = options.stop_percent / 100;
+    console.log('targetPercent', targetPercent);
+    console.log('stopPercent', stopPercent);
     if (position.side === 'long') {
-      result.target = entryPrice * (1 + options.target_percent / 100);
-      result.stop = entryPrice * (1 - options.stop_percent / 100);
+      result.target = entryPrice * (1 + targetPercent);
+      result.stop = entryPrice * (1 - stopPercent);
     } else {
-      result.target = entryPrice * (1 - options.target_percent / 100);
-      result.stop = entryPrice * (1 + options.stop_percent / 100);
+      result.target = entryPrice * (1 - targetPercent);
+      result.stop = entryPrice * (1 + stopPercent);
     }
     console.log('result', result);
     return result;
