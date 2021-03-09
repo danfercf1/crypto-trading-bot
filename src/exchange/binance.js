@@ -210,7 +210,7 @@ module.exports = class Binance {
     if (!order.getAmount() && !order.getPrice() && !order.getSymbol()) {
       throw Error('Invalid amount for update');
     }
-
+    console.log('BINANCE', order);
     const myOrder = {
       symbol: order.getSymbol(),
       side: order.isShort() ? 'SELL' : 'BUY',

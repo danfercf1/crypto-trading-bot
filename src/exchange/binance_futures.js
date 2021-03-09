@@ -197,7 +197,7 @@ module.exports = class BinanceFutures {
   }
 
   /**
-   * Convert incoming positions only if they are open
+   * Convert incoming positions only if they are open, just updates the position with updated data
    *
    * @param positions
    * @returns {*}
@@ -213,9 +213,7 @@ module.exports = class BinanceFutures {
         positionAmt < 0
           ? (entryPrice / markPrice - 1) * 100 // short
           : (markPrice / entryPrice - 1) * 100; // long
-      console.log('profit', profit);
-      console.log('profitx20', profit * 20);
-      console.log('position', position);
+
       return new Position(
         position.symbol,
         positionAmt < 0 ? 'short' : 'long',
