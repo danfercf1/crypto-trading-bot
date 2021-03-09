@@ -26,7 +26,9 @@ module.exports = class OrderCalculator {
     if (!asset && !currency && !balancePercent) {
       throw new Error(`Invalid capital`);
     }
-
+    console.log('asset', asset);
+    console.log('currency', currency);
+    console.log('balancePercent', balancePercent);
     const exchange = this.exchangeManager.get(exchangeName);
 
     // spot exchanges wants to buy assets
