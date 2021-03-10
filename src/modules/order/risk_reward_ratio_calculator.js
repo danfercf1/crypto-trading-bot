@@ -7,7 +7,7 @@ module.exports = class RiskRewardRatioCalculator {
     this.logger = logger;
   }
 
-  calculateForOpenPosition(position, options = { stop_percent: 3, target_percent: 6 }) {
+  calculateForOpenPosition(position, options = { stop_percent: 3, target_percent: 6, leverage: 1 }) {
     let entryPrice = position.entry;
     if (!entryPrice) {
       this.logger.info(`Invalid position entryPrice for stop loss:${JSON.stringify(position)}`);
@@ -22,14 +22,31 @@ module.exports = class RiskRewardRatioCalculator {
     entryPrice = Math.abs(entryPrice);
     const targetPercent = options.target_percent / 100;
     const stopPercent = options.stop_percent / 100;
+    console.log('entryPrice', entryPrice);
+    console.log('options', options);
     console.log('targetPercent', targetPercent);
     console.log('stopPercent', stopPercent);
     if (position.side === 'long') {
-      result.target = entryPrice * (1 + targetPercent);
-      result.stop = entryPrice * (1 - stopPercent);
+      if (options.leverage > 1) {
+        // Binance target price calculation Long target price = entry price * ( ROE% / leverage + 1 )
+        result.target = entryPrice * (targetPercent / options.leverage + 1);
+        // Binance target price calculation Short target price = entry price * ( 1 - ROE% / leverage )
+        result.stop = entryPrice * (1 - stopPercent / options.leverage);
+      } else {
+        result.target = entryPrice * (1 + targetPercent);
+        result.stop = entryPrice * (1 - stopPercent);
+      }
     } else {
-      result.target = entryPrice * (1 - targetPercent);
-      result.stop = entryPrice * (1 + stopPercent);
+      // eslint-disable-next-line no-lonely-if
+      if (options.leverage > 1) {
+        // Binance target price calculation Short target price = entry price * ( 1 - ROE% / leverage )
+        result.target = entryPrice * (1 - targetPercent / options.leverage);
+        // Binance stop price calculation Long target price = entry price * ( ROE% / leverage + 1 )
+        result.stop = entryPrice * (targetPercent / options.leverage + 1);
+      } else {
+        result.target = entryPrice * (1 - targetPercent);
+        result.stop = entryPrice * (1 + stopPercent);
+      }
     }
     console.log('result', result);
     return result;
