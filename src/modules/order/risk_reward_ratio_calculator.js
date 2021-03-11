@@ -42,7 +42,7 @@ module.exports = class RiskRewardRatioCalculator {
         // Binance target price calculation Short target price = entry price * ( 1 - ROE% / leverage )
         result.target = entryPrice * (1 - targetPercent / options.leverage);
         // Binance stop price calculation Long target price = entry price * ( ROE% / leverage + 1 )
-        result.stop = entryPrice * (targetPercent / options.leverage + 1);
+        result.stop = entryPrice * (stopPercent / options.leverage + 1);
       } else {
         result.target = entryPrice * (1 - targetPercent);
         result.stop = entryPrice * (1 + stopPercent);
