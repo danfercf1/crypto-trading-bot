@@ -17,7 +17,8 @@ module.exports = class BinanceFutures {
     this.candleImporter = candleImporter;
     this.throttler = throttler;
     this.exchange = null;
-
+    this.leverageUpdated = {};
+  
     this.ccxtExchangeOrder = CcxtExchangeOrder.createEmpty(logger);
 
     this.positions = {};
@@ -171,7 +172,9 @@ module.exports = class BinanceFutures {
   }
 
   async order(order) {
-    return this.ccxtExchangeOrder.createOrder(order);
+    await this.updateLeverage(order.getSymbol());
+    const newOrder = await this.addMargin(order);
+    return this.ccxtExchangeOrder.createOrder(newOrder);
   }
 
   async cancelOrder(id) {
@@ -548,6 +551,93 @@ module.exports = class BinanceFutures {
         return request;
       }
     });
+  }
+
+  /**
+   * Set the configured leverage size "0-125" for pair before creating an order default "5" if not provided in configuration
+   *
+   * symbol configuration via:
+   *
+   * "extra.binance_futures_leverage": 5
+   *
+   * @param symbol
+   */
+  async updateLeverage(symbol) {
+    const config = this.symbols.find(cSymbol => cSymbol.symbol === symbol);
+    if (!config) {
+      this.logger.error(`Binance futures: Invalid leverage config for:${symbol}`);
+      return;
+    }
+
+    // use default leverage to "20"
+    const leverageSize = _.get(config, 'extra.binance_futures_leverage', 20);
+
+    if (leverageSize < 0 || leverageSize > 125) {
+      throw Error(`Invalid leverage size for: ${leverageSize} ${symbol}`);
+    }
+
+    // we dont get the selected leverage value in websocket or api endpoints
+    // so we update them only in a given time window; system overload is often blocked
+    if (symbol in this.leverageUpdated && this.leverageUpdated[symbol] > moment().subtract(45, 'minutes')) {
+      this.logger.debug(`Binance futures: leverage update not needed: ${symbol}`);
+      return;
+    }
+
+    if (await this.getPositionForSymbol(symbol)) {
+      this.logger.debug(`Binance futures: leverage update with open position not needed: ${symbol}`);
+      return;
+    }
+
+    const parameters = {
+      symbol: symbol,
+      leverage: leverageSize,
+      timestamp: new Date().getTime()
+    };
+
+    const result = await this.ccxtClient.fapiPrivatePostLeverage(parameters).catch(error => {
+      this.logger.error(
+        `Binance futures: Invalid leverage update request:${JSON.stringify({ error: error, body: parameters })}`
+      );
+    });
+
+    if (result.maxNotionalValue && result.symbol) {
+      this.logger.debug(`Binance futures: Leverage update:${JSON.stringify(symbol)}`);
+      // set updated indicator; for not update on next request
+      this.leverageUpdated[symbol] = new Date();
+      return;
+    }
+
+    this.logger.error(`Binance futures: Leverage update error invalid body:${parameters}`);
+  }
+
+  /**
+   * Add a % margin to the order
+   * @param {Order} order
+   */
+  async addMargin(order) {
+    let newOrder = null;
+    let margin = null;
+    let price = null;
+    const symbol = order.getSymbol();
+    const side = order.isLong() ? Order.SIDE_LONG : Order.SIDE_SHORT;
+    const amount = order.getAmount();
+    const { options } = order;
+    const config = this.symbols.find(cSymbol => cSymbol.symbol === symbol);
+    if (order.isLong()) {
+      margin = _.get(config, 'margin.long', 0.5);
+      const percentMargin = parseFloat(margin / 100);
+      price = order.getPrice() * (1 - percentMargin);
+    } else {
+      margin = _.get(config, 'margin.short', 0.5);
+      const percentMargin = parseFloat(margin / 100);
+      price = order.getPrice() * (1 + percentMargin);
+    }
+
+    if (order.getType() === Order.TYPE_LIMIT) {
+      // eslint-disable-next-line new-cap
+      newOrder = Order.createLimitPostOnlyOrder(symbol, side, price, amount, options);
+    }
+    return newOrder;
   }
 
   static createRestOrderFromWebsocket(websocketOrder) {

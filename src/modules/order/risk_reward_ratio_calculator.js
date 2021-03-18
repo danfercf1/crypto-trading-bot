@@ -13,7 +13,7 @@ module.exports = class RiskRewardRatioCalculator {
       this.logger.info(`Invalid position entryPrice for stop loss:${JSON.stringify(position)}`);
       return undefined;
     }
-    console.log('options', options);
+
     const result = {
       stop: undefined,
       target: undefined
@@ -22,10 +22,7 @@ module.exports = class RiskRewardRatioCalculator {
     entryPrice = Math.abs(entryPrice);
     const targetPercent = options.target_percent / 100;
     const stopPercent = options.stop_percent / 100;
-    console.log('entryPrice', entryPrice);
-    console.log('options', options);
-    console.log('targetPercent', targetPercent);
-    console.log('stopPercent', stopPercent);
+
     if (position.side === 'long') {
       if (options.leverage > 1) {
         // Binance target price calculation Long target price = entry price * ( ROE% / leverage + 1 )
@@ -48,7 +45,7 @@ module.exports = class RiskRewardRatioCalculator {
         result.stop = entryPrice * (1 + stopPercent);
       }
     }
-    console.log('result', result);
+
     return result;
   }
 
