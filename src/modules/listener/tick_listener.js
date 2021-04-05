@@ -80,7 +80,7 @@ module.exports = class TickListener {
       // console.log('blocked')
     } else {
       this.notified[symbol.exchange + symbol.symbol + strategyKey] = new Date();
-      this.notifier.send(`[${signal} (${strategyKey})` + `] ${symbol.exchange}:${symbol.symbol} - ${ticker.ask}`);
+      this.notifier.send(`[${signal} (${strategyKey}) ] ${symbol.exchange}:${symbol.symbol} - ${ticker.ask}`);
 
       // log signal
       this.signalLogger.signal(
@@ -166,20 +166,25 @@ module.exports = class TickListener {
       strategyKey
     );
     this.notified[noteKey] = new Date();
-
-    await this.pairStateManager.update(symbol.exchange, symbol.symbol, signal);
+    const options = {
+      isStrategy: true
+    };
+    await this.pairStateManager.update(symbol.exchange, symbol.symbol, signal, options);
   }
 
   async placeStrategyOrders(placedOrder, symbol) {
+    // eslint-disable-next-line no-restricted-syntax
     for (const order of placedOrder) {
+      // eslint-disable-next-line no-await-in-loop
       const amount = await this.orderCalculator.calculateOrderSizeCapital(
         symbol.exchange,
         symbol.symbol,
         OrderCapital.createCurrency(order.amount_currency)
       );
-        
+
       const exchangeOrder = Order.createLimitPostOnlyOrder(symbol.symbol, Order.SIDE_LONG, order.price, amount);
 
+      // eslint-disable-next-line no-await-in-loop
       await this.orderExecutor.executeOrderWithAmountAndPrice(symbol.exchange, exchangeOrder);
     }
   }

@@ -161,6 +161,7 @@ module.exports = class ExchangeOrderWatchdogListener {
       const order = Order.createStopLossOrder(position.getSymbol(), price, orderChange.amount);
 
       try {
+        console.log('stopLossWatchdog', order);
         await exchange.order(order);
       } catch (e) {
         logger.error(
@@ -359,7 +360,7 @@ module.exports = class ExchangeOrderWatchdogListener {
         let trailingOffset = (activationPrice * parseFloat(config.stop_percent)) / 100;
         trailingOffset = exchange.calculatePrice(trailingOffset, exchangeSymbol);
         const order = Order.createTrailingStopLossOrder(position.symbol, trailingOffset, orderChange.amount);
-
+        console.log('trailingStoplossWatch', order);
         return exchange.order(order);
       })
     )

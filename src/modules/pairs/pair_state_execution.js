@@ -110,11 +110,14 @@ module.exports = class PairStateExecution {
       const state = pairState.getExchangeOrder();
       if (state) {
         newOrders
-          .filter(o => state.id !== o.id && state.id != o.id)
+          .filter(o => state.id !== o.id && state.id !== o.id)
           .forEach(async order => {
             this.logger.error(`Pair State: Clear invalid orders:${JSON.stringify([order])}`);
             try {
-              await this.orderExecutor.cancelOrder(pairState.exchange, order.id);
+              console.log('cancel order', order);
+              if (!order.options.isStrategy) {
+                await this.orderExecutor.cancelOrder(pairState.exchange, order.id);
+              }
             } catch (e) {
               console.log(e);
             }
@@ -276,11 +279,11 @@ module.exports = class PairStateExecution {
     if (side === 'short') {
       orderSize *= -1;
     }
-
+    console.log('options pairStateExecuteOrder', options);
     const myOrder =
       options && options.market === true
         ? Order.createMarketOrder(symbol, orderSize)
-        : Order.createLimitPostOnlyOrderAutoAdjustedPriceOrder(symbol, orderSize);
+        : Order.createLimitPostOnlyOrderAutoAdjustedPriceOrder(symbol, orderSize, options);
 
     return this.orderExecutor.executeOrder(exchangeName, myOrder);
   }

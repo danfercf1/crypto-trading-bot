@@ -29,6 +29,7 @@ module.exports = class PairState {
    * @returns {PairState}
    */
   static createLong(exchange, symbol, capital, options, adjustedPrice, clearCallback) {
+    console.log('create long options', options);
     if (!(capital instanceof OrderCapital)) {
       throw new Error('TypeError: invalid OrderCapital');
     }
@@ -48,6 +49,7 @@ module.exports = class PairState {
    * @returns {PairState}
    */
   static createShort(exchange, symbol, capital, options, adjustedPrice, clearCallback) {
+    console.log('create short options', options);
     if (!(capital instanceof OrderCapital)) {
       throw new Error('TypeError: invalid OrderCapital');
     }

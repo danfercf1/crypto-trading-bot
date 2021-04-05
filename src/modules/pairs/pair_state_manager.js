@@ -14,6 +14,7 @@ module.exports = class PairStateManager {
   }
 
   update(exchange, symbol, state, options = {}) {
+    console.log('options', options);
     if (!['long', 'close', 'short', 'cancel'].includes(state)) {
       this.logger.error(`Invalidate state: ${state}`);
       throw new Error(`Invalidate state: ${state}`);

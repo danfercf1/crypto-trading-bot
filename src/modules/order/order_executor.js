@@ -261,6 +261,7 @@ module.exports = class OrderExecutor {
 
     let exchangeOrder;
     try {
+      console.log('ORDER EXECUTOR', order);
       exchangeOrder = await exchange.order(order);
     } catch (err) {
       this.logger.error(`Order create canceled:${JSON.stringify(order)} - ${JSON.stringify(String(err))}`);

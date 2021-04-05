@@ -172,8 +172,15 @@ module.exports = class BinanceFutures {
   }
 
   async order(order) {
+    let newOrder = order;
+    console.log('ORDER', order);
     await this.updateLeverage(order.getSymbol());
-    const newOrder = await this.addMargin(order);
+    const { options } = order;
+    console.log('isStrategy', options.isStrategy);
+    if (options.isStrategy) {
+      newOrder = await this.addMargin(order);
+      console.log('newOrder', newOrder);
+    }
     return this.ccxtExchangeOrder.createOrder(newOrder);
   }
 
